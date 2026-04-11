@@ -1,0 +1,140 @@
+.root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  box-sizing: border-box;
+}
+
+.card {
+  width: min(440px, 100%);
+  padding: 32px 28px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.metaBlock {
+  margin-bottom: 22px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #12151c;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.metaLabel {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.metaValue {
+  font-family: var(--mono);
+  color: var(--text);
+}
+
+.metaMuted {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field {
+  margin-bottom: 18px;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #12151c;
+  color: var(--text);
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.primary {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+}
+
+.primary:disabled {
+  cursor: not-allowed;
+  background: var(--border);
+}
+
+.progressLine {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.error {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--error);
+  line-height: 1.45;
+}
+
+.links {
+  margin-top: 28px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.links ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}

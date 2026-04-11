@@ -1,0 +1,41 @@
+{
+  "name": "@eveshipfit/static-data-viewer",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/EVEShipFit"
+  },
+  "version": "0.0.0-git",
+  "description": "A viewer for EVE Online's Static Data",
+  "author": "EVEShipFit Team <info@eveship.fit>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EVEShipFit/static-data-viewer"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "@duckdb/duckdb-wasm": "^1.29.0",
+    "@zip.js/zip.js": "^2.8.26",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.39.4",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.5.0",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.59.1",
+    "vite": "^6.2.0"
+  }
+}
