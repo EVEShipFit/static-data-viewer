@@ -48,16 +48,25 @@ export function Notebook({
 }) {
   const [cells, setCells] = useState<NotebookCellModel[]>(hydrateCells);
   const [outputs, setOutputs] = useState<
-    Record<string, { loading: boolean; data?: TabularResult; error?: string }>
+    Record<string, { loading: boolean; startedAt?: number; data?: TabularResult; error?: string }>
   >({});
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [nowMs, setNowMs] = useState(() => Date.now());
   const lastTemplateKeyRef = useRef<string | null>(null);
+  const cancelRequestedRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     if (!toastMessage) return;
     const t = setTimeout(() => setToastMessage(null), 2000);
     return () => clearTimeout(t);
   }, [toastMessage]);
+
+  useEffect(() => {
+    const hasRunning = Object.values(outputs).some((state) => state.loading);
+    if (!hasRunning) return;
+    const t = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [outputs]);
 
   useEffect(() => {
     const importFromHash = () => {
@@ -114,17 +123,39 @@ export function Notebook({
   const runCell = useCallback(
     async (id: string, sql: string) => {
       if (!conn) return;
-      setOutputs((o) => ({ ...o, [id]: { loading: true } }));
+      if (outputs[id]?.loading) return;
+      setOutputs((o) => ({ ...o, [id]: { loading: true, startedAt: Date.now() } }));
       try {
         const table = await conn.query(sql);
+        if (cancelRequestedRef.current.has(id)) {
+          setOutputs((o) => ({ ...o, [id]: { loading: false, error: "Query cancelled." } }));
+          return;
+        }
         const data = arrowTableToTabular(table);
         setOutputs((o) => ({ ...o, [id]: { loading: false, data } }));
       } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
-        setOutputs((o) => ({ ...o, [id]: { loading: false, error: message } }));
+        const cancelled =
+          cancelRequestedRef.current.has(id) || /cancel|interrupt|aborted/i.test(message);
+        setOutputs((o) => ({
+          ...o,
+          [id]: { loading: false, error: cancelled ? "Query cancelled." : message },
+        }));
+      } finally {
+        cancelRequestedRef.current.delete(id);
       }
     },
-    [conn],
+    [conn, outputs],
+  );
+
+  const stopCell = useCallback(
+    async (id: string) => {
+      if (!conn) return;
+      if (!outputs[id]?.loading) return;
+      cancelRequestedRef.current.add(id);
+      await conn.cancelSent().catch(() => {});
+    },
+    [conn, outputs],
   );
 
   const moveCell = (from: number, to: number) => {
@@ -228,18 +259,28 @@ export function Notebook({
               </button>
               <button
                 type="button"
-                className={nb.btnRun}
+                className={`${nb.btnRun} ${outputs[cell.id]?.loading ? nb.btnStop : ""}`}
                 disabled={!conn}
-                title="Run query (Ctrl+Enter)"
-                onClick={() => runCell(cell.id, cell.sql)}
+                title={outputs[cell.id]?.loading ? "Stop running query" : "Run query (Ctrl+Enter)"}
+                onClick={() =>
+                  outputs[cell.id]?.loading
+                    ? void stopCell(cell.id)
+                    : void runCell(cell.id, cell.sql)
+                }
               >
-                <span className={nb.runIcon} aria-hidden="true">
-                  ▶
-                </span>
-                Run
-                <span className={nb.runHint} aria-hidden="true">
-                  Ctrl+Enter
-                </span>
+                {outputs[cell.id]?.loading ? (
+                  "Stop"
+                ) : (
+                  <>
+                    <span className={nb.runIcon} aria-hidden="true">
+                      ▶
+                    </span>
+                    Run
+                    <span className={nb.runHint} aria-hidden="true">
+                      Ctrl+Enter
+                    </span>
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -255,7 +296,7 @@ export function Notebook({
               }
             }}
           />
-          <ResultBlock state={outputs[cell.id]} />
+          <ResultBlock state={outputs[cell.id]} nowMs={nowMs} />
         </section>
       ))}
       <button type="button" className={nb.addCell} onClick={addCell}>
@@ -272,14 +313,18 @@ export function Notebook({
 
 function ResultBlock({
   state,
+  nowMs,
 }: {
-  state?: { loading: boolean; data?: TabularResult; error?: string };
+  state?: { loading: boolean; startedAt?: number; data?: TabularResult; error?: string };
+  nowMs: number;
 }) {
   if (!state) {
     return <div className={nb.hint}>Run the cell to see results.</div>;
   }
   if (state.loading) {
-    return <div className={nb.hint}>Running…</div>;
+    const elapsedSeconds =
+      typeof state.startedAt === "number" ? Math.max(0, Math.floor((nowMs - state.startedAt) / 1000)) : 0;
+    return <div className={nb.hint}>Running… {elapsedSeconds}s</div>;
   }
   if (state.error) {
     return <pre className={nb.errorPre}>{state.error}</pre>;
