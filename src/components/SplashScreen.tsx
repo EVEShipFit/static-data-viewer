@@ -23,6 +23,8 @@ export function SplashScreen(props: {
   onSelectedLang: (code: string) => void;
   includeMapTables: boolean;
   onIncludeMapTables: (enabled: boolean) => void;
+  autoLoadLatestSde: boolean;
+  onAutoLoadLatestSde: (enabled: boolean) => void;
   loading: boolean;
   progressLabel: string | null;
   error: string | null;
@@ -98,6 +100,16 @@ export function SplashScreen(props: {
           <span>
             Include <code>map*</code> tables (large)
           </span>
+        </label>
+
+        <label className={styles.checkboxRow}>
+          <input
+            type="checkbox"
+            checked={props.autoLoadLatestSde}
+            onChange={(e) => props.onAutoLoadLatestSde(e.target.checked)}
+            disabled={props.loading}
+          />
+          <span>Auto-load latest SDE on startup</span>
         </label>
 
         {props.sharedCellPreview ? (

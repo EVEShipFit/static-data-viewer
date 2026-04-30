@@ -12,6 +12,8 @@ export function AppHeader(props: {
   selectedLang: string;
   languages: LanguageOption[];
   onLanguageChange: (code: string) => void;
+  autoLoadLatestSde: boolean;
+  onAutoLoadLatestSde: (enabled: boolean) => void;
 }) {
   return (
     <header className={styles.header}>
@@ -48,6 +50,14 @@ export function AppHeader(props: {
           {props.load.status === "error" && (
             <span className={styles.statusError}>{props.load.message}</span>
           )}
+          <button
+            type="button"
+            className={styles.autoLoadToggle}
+            onClick={() => props.onAutoLoadLatestSde(!props.autoLoadLatestSde)}
+            title="Toggle splash auto-load behavior"
+          >
+            Auto-load: {props.autoLoadLatestSde ? "on" : "off"}
+          </button>
         </div>
       </div>
     </header>
