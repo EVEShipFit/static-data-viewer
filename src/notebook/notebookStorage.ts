@@ -7,6 +7,13 @@ export interface PersistedCell {
   sql: string;
 }
 
+function newCellId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `cell-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
 export function loadNotebookCells(): PersistedCell[] | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -53,7 +60,7 @@ function decodeBase64Url(input: string): string {
 }
 
 export function buildShareUrl(cell: PersistedCell): string {
-  const payload = JSON.stringify({ title: cell.title, sql: cell.sql });
+  const payload = JSON.stringify({ id: cell.id, title: cell.title, sql: cell.sql });
   const encoded = encodeBase64Url(payload);
   const u = new URL(window.location.href);
   u.hash = `${SHARE_HASH_KEY}=${encoded}`;
@@ -69,11 +76,12 @@ export function consumeSharedCellFromHash(): PersistedCell | null {
     const encoded = params.get(SHARE_HASH_KEY);
     if (!encoded) return null;
     const raw = decodeBase64Url(encoded);
-    const parsed = JSON.parse(raw) as { title?: unknown; sql?: unknown };
+    const parsed = JSON.parse(raw) as { id?: unknown; title?: unknown; sql?: unknown };
+    const id = typeof parsed.id === "string" && parsed.id.trim() ? parsed.id : newCellId();
     const title = typeof parsed.title === "string" ? parsed.title : "Shared query";
     const sql = typeof parsed.sql === "string" ? parsed.sql : "";
     const imported: PersistedCell = {
-      id: `shared-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      id,
       title,
       sql,
     };
