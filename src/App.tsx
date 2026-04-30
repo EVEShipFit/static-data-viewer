@@ -8,6 +8,7 @@ import { Notebook, type NotebookTemplateCell } from "./components/Notebook";
 import { ReferenceSidebar } from "./components/ReferenceSidebar";
 import { SplashScreen } from "./components/SplashScreen";
 import { SDE_JSONL_ZIP_URL } from "./constants";
+import { previewSharedCellFromHash } from "./notebook/notebookStorage";
 import {
   fetchZipBuffer,
   ingestMapTablesIntoExistingFromZipBuffer,
@@ -42,6 +43,8 @@ export default function App() {
     if (languages.some((l) => l.code === selectedLang)) return selectedLang;
     return languages.find((l) => l.code === "en")?.code ?? languages[0]!.code;
   }, [languages, selectedLang]);
+
+  const sharedCellPreview = useMemo(() => previewSharedCellFromHash(), []);
 
   useEffect(() => {
     return () => {
@@ -151,6 +154,7 @@ export default function App() {
         progressLabel={load.status === "loading" ? phaseLabel(load.phase) : null}
         error={load.status === "error" ? load.message : null}
         onLoad={() => void loadSde()}
+        sharedCellPreview={sharedCellPreview}
       />
     );
   }

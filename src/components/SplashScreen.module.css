@@ -77,6 +77,43 @@
   color: var(--muted);
 }
 
+.sharePreview {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #385078;
+  background: #131a27;
+}
+
+.previewText {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.previewTitle {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.previewSql {
+  margin: 0;
+  max-height: 120px;
+  overflow: auto;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #0f131b;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .fieldLabel {
   display: block;
   font-size: 13px;
