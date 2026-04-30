@@ -7,6 +7,21 @@ export interface PersistedCell {
   sql: string;
 }
 
+function parseSharedCellHash(): PersistedCell | null {
+  const hash = window.location.hash.startsWith("#")
+    ? window.location.hash.slice(1)
+    : window.location.hash;
+  const params = new URLSearchParams(hash);
+  const encoded = params.get(SHARE_HASH_KEY);
+  if (!encoded) return null;
+  const raw = decodeBase64Url(encoded);
+  const parsed = JSON.parse(raw) as { id?: unknown; title?: unknown; sql?: unknown };
+  const id = typeof parsed.id === "string" && parsed.id.trim() ? parsed.id : newCellId();
+  const title = typeof parsed.title === "string" ? parsed.title : "Shared query";
+  const sql = typeof parsed.sql === "string" ? parsed.sql : "";
+  return { id, title, sql };
+}
+
 function newCellId(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
@@ -67,24 +82,18 @@ export function buildShareUrl(cell: PersistedCell): string {
   return u.toString();
 }
 
+export function previewSharedCellFromHash(): PersistedCell | null {
+  try {
+    return parseSharedCellHash();
+  } catch {
+    return null;
+  }
+}
+
 export function consumeSharedCellFromHash(): PersistedCell | null {
   try {
-    const hash = window.location.hash.startsWith("#")
-      ? window.location.hash.slice(1)
-      : window.location.hash;
-    const params = new URLSearchParams(hash);
-    const encoded = params.get(SHARE_HASH_KEY);
-    if (!encoded) return null;
-    const raw = decodeBase64Url(encoded);
-    const parsed = JSON.parse(raw) as { id?: unknown; title?: unknown; sql?: unknown };
-    const id = typeof parsed.id === "string" && parsed.id.trim() ? parsed.id : newCellId();
-    const title = typeof parsed.title === "string" ? parsed.title : "Shared query";
-    const sql = typeof parsed.sql === "string" ? parsed.sql : "";
-    const imported: PersistedCell = {
-      id,
-      title,
-      sql,
-    };
+    const imported = parseSharedCellHash();
+    if (!imported) return null;
 
     const clean = new URL(window.location.href);
     clean.hash = "";

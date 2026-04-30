@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { PersistedCell } from "../notebook/notebookStorage";
 import type { SdeLatestInfo } from "../sde/latestMeta";
 import { fetchSdeLatestInfo } from "../sde/latestMeta";
 import { SPLASH_LANGUAGE_OPTIONS } from "../sde/splashLanguages";
@@ -26,6 +27,7 @@ export function SplashScreen(props: {
   progressLabel: string | null;
   error: string | null;
   onLoad: () => void;
+  sharedCellPreview: PersistedCell | null;
 }) {
   const [latest, setLatest] = useState<SdeLatestInfo | null>(null);
   const [metaError, setMetaError] = useState(false);
@@ -97,6 +99,18 @@ export function SplashScreen(props: {
             Include <code>map*</code> tables (large)
           </span>
         </label>
+
+        {props.sharedCellPreview ? (
+          <div className={styles.sharePreview}>
+            <div className={styles.metaLabel}>Shared query</div>
+            <p className={styles.previewText}>
+              A shared query link was opened. Load the SDE first, then the query will be imported
+              into your notebook.
+            </p>
+            <div className={styles.previewTitle}>{props.sharedCellPreview.title}</div>
+            <pre className={styles.previewSql}>{props.sharedCellPreview.sql}</pre>
+          </div>
+        ) : null}
 
         <button
           type="button"
