@@ -119,3 +119,43 @@
   font: inherit;
   cursor: pointer;
 }
+
+@media (max-width: 900px) {
+  .aside {
+    display: none;
+  }
+
+  .main {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .toolbar {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .langSelect {
+    min-width: 0;
+    width: min(100%, 220px);
+  }
+
+  .statusCol {
+    align-items: flex-start;
+  }
+
+  .statusLine,
+  .statusError {
+    text-align: left;
+  }
+
+  .main {
+    padding: 12px;
+  }
+}
