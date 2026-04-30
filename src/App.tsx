@@ -16,6 +16,16 @@ import {
 } from "./sde/ingestSde";
 import { buildVersionedSdeZipUrl, fetchSdeLatestInfo } from "./sde/latestMeta";
 
+const AUTO_LOAD_SDE_KEY = "sde-viewer-auto-load-latest-v1";
+
+function loadAutoLoadPreference(): boolean {
+  try {
+    return localStorage.getItem(AUTO_LOAD_SDE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 export default function App() {
   const [appPhase, setAppPhase] = useState<"splash" | "app">("splash");
   const [load, setLoad] = useState<LoadState>({ status: "idle" });
@@ -23,12 +33,14 @@ export default function App() {
   const [languages, setLanguages] = useState<{ code: string; name: string }[]>([]);
   const [selectedLang, setSelectedLang] = useState("en");
   const [includeMapTables, setIncludeMapTables] = useState(false);
+  const [autoLoadLatestSde, setAutoLoadLatestSde] = useState(loadAutoLoadPreference);
   const [activeIncludeMapTables, setActiveIncludeMapTables] = useState(false);
   const [templateCell, setTemplateCell] = useState<NotebookTemplateCell | null>(null);
 
   const connRef = useRef<AsyncDuckDBConnection | null>(null);
   const zipBufRef = useRef<ArrayBuffer | null>(null);
   const loadStatusRef = useRef<LoadState["status"]>("idle");
+  const autoLoadAttemptedRef = useRef(false);
 
   useEffect(() => {
     connRef.current = conn;
@@ -98,6 +110,24 @@ export default function App() {
     }
   }, [includeMapTables, selectedLang, runIngestFromBuffer]);
 
+  const onAutoLoadLatestSde = useCallback((enabled: boolean) => {
+    setAutoLoadLatestSde(enabled);
+    try {
+      localStorage.setItem(AUTO_LOAD_SDE_KEY, enabled ? "1" : "0");
+    } catch {
+      /* ignore storage failures */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!autoLoadLatestSde) return;
+    if (appPhase !== "splash") return;
+    if (load.status !== "idle") return;
+    if (autoLoadAttemptedRef.current) return;
+    autoLoadAttemptedRef.current = true;
+    void loadSde();
+  }, [appPhase, autoLoadLatestSde, load.status, loadSde]);
+
   const onLanguageChange = useCallback(
     async (code: string) => {
       setSelectedLang(code);
@@ -150,6 +180,8 @@ export default function App() {
         onSelectedLang={setSelectedLang}
         includeMapTables={includeMapTables}
         onIncludeMapTables={setIncludeMapTables}
+        autoLoadLatestSde={autoLoadLatestSde}
+        onAutoLoadLatestSde={onAutoLoadLatestSde}
         loading={load.status === "loading"}
         progressLabel={load.status === "loading" ? phaseLabel(load.phase) : null}
         error={load.status === "error" ? load.message : null}
@@ -166,6 +198,8 @@ export default function App() {
         selectedLang={selectLangValue}
         languages={languages}
         onLanguageChange={(code) => void onLanguageChange(code)}
+        autoLoadLatestSde={autoLoadLatestSde}
+        onAutoLoadLatestSde={onAutoLoadLatestSde}
       />
 
       <div className={layout.body}>

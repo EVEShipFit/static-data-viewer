@@ -73,6 +73,19 @@
   text-align: right;
 }
 
+.autoLoadToggle {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 2px;
+}
+
 .body {
   display: flex;
   flex: 1;
