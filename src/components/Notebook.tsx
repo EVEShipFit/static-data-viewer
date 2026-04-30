@@ -18,6 +18,9 @@ export interface NotebookTemplateCell {
 }
 
 function newId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
   return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
@@ -60,8 +63,20 @@ export function Notebook({
     const importFromHash = () => {
       const imported = consumeSharedCellFromHash();
       if (!imported) return;
-      setCells((existing) => [...existing, imported]);
-      setToastMessage(`Imported shared cell: ${imported.title}`);
+      setCells((existing) => {
+        const sameId = existing.find((cell) => cell.id === imported.id);
+        if (!sameId) {
+          setToastMessage(`Imported shared cell: ${imported.title}`);
+          return [...existing, imported];
+        }
+        if (sameId.sql === imported.sql) {
+          setToastMessage("Shared cell already exists, skipped import.");
+          return existing;
+        }
+        const withNewId = { ...imported, id: newId() };
+        setToastMessage(`Imported shared cell as new copy: ${imported.title}`);
+        return [...existing, withNewId];
+      });
     };
 
     importFromHash();
