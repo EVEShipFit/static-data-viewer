@@ -1,9 +1,9 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - published
   workflow_dispatch:
     inputs:
       branch:
@@ -25,6 +25,14 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Set version
+        run: |
+          # Remove the "v" from the version.
+          VERSION=$(echo ${{ github.ref_name }} | cut -b2-)
+          echo "Version: ${VERSION}"
+
+          sed -i 's/"version": "0.0.0-git"/"version": "'${VERSION}'"/' package.json
+
       - name: Install dependencies
         run: npm ci
 
@@ -32,7 +40,7 @@ jobs:
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
-        run: npx wrangler@3 pages deploy dist --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} --branch=${{ github.event_name == 'workflow_dispatch' && inputs.branch || github.ref_name }}
+        run: npx wrangler@3 pages deploy dist --project-name=${{ secrets.CLOUDFLARE_PROJECT_NAME }} --branch=${{ github.event_name == 'workflow_dispatch' && inputs.branch || 'main' }}
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
